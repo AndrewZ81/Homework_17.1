@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 # app.py
 
-from flask import Flask
+from flask import Flask, request
 from flask_restx import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields
@@ -61,8 +60,23 @@ movies_namespace = api.namespace("movies")
 @movies_namespace.route("/")
 class MoviesView(Resource):
     def get(self):
-        movies = db.session.query(Movie).all()
-        return movies_schema.dump(movies), 200
+        director_id = request.args.get("director_id")
+        genre_id = request.args.get("genre_id")
+        if director_id:
+            movies = Movie.query.filter(Movie.director_id == int(director_id)).all()
+            if movies:
+                return movies_schema.dump(movies), 200
+            else:
+                return "Такого director_id не существует", 404
+        elif genre_id:
+            movies = Movie.query.filter(Movie.genre_id == int(genre_id)).all()
+            if movies:
+                return movies_schema.dump(movies), 200
+            else:
+                return "Такого genre_id не существует", 404
+        else:
+            movies = Movie.query.all()
+            return movies_schema.dump(movies), 200
 
 
 @movies_namespace.route("/<int:id>")
