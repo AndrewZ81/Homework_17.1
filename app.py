@@ -8,8 +8,30 @@ from marshmallow import Schema, fields
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JSON_AS_ASCII'] = False
+app.config["RESTX_JSON"] = {'ensure_ascii': False}
 db = SQLAlchemy(app)
+
+
+class Director(db.Model):
+    __tablename__ = 'director'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+
+
+class DirectorSchema(Schema):
+    id = fields.Int()
+    name = fields.Str()
+
+
+class Genre(db.Model):
+    __tablename__ = 'genre'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+
+
+class GenreSchema(Schema):
+    id = fields.Int()
+    name = fields.Str()
 
 
 class Movie(db.Model):
@@ -33,28 +55,21 @@ class MovieSchema(Schema):
     trailer = fields.Str()
     year = fields.Int()
     rating = fields.Float()
-    genre_id = fields.Str()
-    director_id = fields.Int()
+    genre = fields.Pluck(GenreSchema, "name")
+    director = fields.Pluck(DirectorSchema, "name")
 
 
 movie_schema = MovieSchema()
 movies_schema = MovieSchema(many=True)
-
-
-class Director(db.Model):
-    __tablename__ = 'director'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-
-
-class Genre(db.Model):
-    __tablename__ = 'genre'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-
+genre_schema = GenreSchema()
+genres_schema = GenreSchema(many=True)
+director_schema = DirectorSchema()
+directors_schema = DirectorSchema(many=True)
 
 api = Api(app)
 movies_namespace = api.namespace("movies")
+genres_namespace = api.namespace("genres")
+directors_namespace = api.namespace("directors")
 
 
 @movies_namespace.route("/")
@@ -62,7 +77,14 @@ class MoviesView(Resource):
     def get(self):
         director_id = request.args.get("director_id")
         genre_id = request.args.get("genre_id")
-        if director_id:
+        if director_id and genre_id:
+            movies = Movie.query.filter(Movie.director_id == int(director_id),
+                                        Movie.genre_id == int(genre_id)).all()
+            if movies:
+                return movies_schema.dump(movies), 200
+            else:
+                return "Такого director_id и genre_id не существует", 404
+        elif director_id:
             movies = Movie.query.filter(Movie.director_id == int(director_id)).all()
             if movies:
                 return movies_schema.dump(movies), 200
