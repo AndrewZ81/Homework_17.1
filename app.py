@@ -141,7 +141,7 @@ class MovieView(Resource):
                 db.session.rollback()
                 return "Не удалось изменить фильм", 404
             else:
-                return "Фильм изменён", 203
+                return "Фильм изменён", 200
         else:
             return "Такого фильма не существует", 404
 
@@ -150,7 +150,7 @@ class MovieView(Resource):
         if movie:
             db.session.delete(movie)
             db.session.commit()
-            return "Фильм удалён", 204
+            return "Фильм удалён", 200
         else:
             return "Такого фильма не существует", 404
 
@@ -195,7 +195,7 @@ class DirectorView(Resource):
                 db.session.rollback()
                 return "Не удалось изменить режиссёра", 404
             else:
-                return "Режиссёр изменён", 203
+                return "Режиссёр изменён", 200
         else:
             return "Такого режиссёра не существует", 404
 
@@ -204,7 +204,7 @@ class DirectorView(Resource):
         if director:
             db.session.delete(director)
             db.session.commit()
-            return "Режиссёр удалён", 204
+            return "Режиссёр удалён", 200
         else:
             return "Такого режиссёра не существует", 404
 
@@ -249,7 +249,7 @@ class GenreView(Resource):
                 db.session.rollback()
                 return "Не удалось изменить жанр", 404
             else:
-                return "Жанр изменён", 203
+                return "Жанр изменён", 200
         else:
             return "Такого жанра не существует", 404
 
@@ -258,7 +258,7 @@ class GenreView(Resource):
         if genre:
             db.session.delete(genre)
             db.session.commit()
-            return "Жанр удалён", 204
+            return "Жанр удалён", 200
         else:
             return "Такого жанра не существует", 404
 
